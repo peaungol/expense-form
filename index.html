@@ -118,6 +118,27 @@
             const amount = document.getElementById('amount').value;
             const refCode = Math.random().toString(36).substring(2, 6).toUpperCase();
 
+			// 1. DATA FOR GOOGLE SHEETS
+    		const payload = {
+        		authKey: "MySuperSecret123!", // MUST MATCH THE SCRIPT
+        		refCode: refCode,
+        		bill: bill,
+        		item: item,
+        		desc: desc,
+        		supplier: supplier,
+        		inst: inst,
+        		amount: amount
+    		};
+
+    		try {
+        	// 2. SEND TO GOOGLE SHEETS (Replace with your Apps Script URL)
+        	const scriptUrl = "https://script.google.com/macros/s/AKfycby17s2vUqmaLRg8NUmBi2C4XIIVciDRXFHviGYYiTiVl6v9ieLd0i7K-EC63s4ph3ZAIQ/exec";
+        
+        	await fetch(scriptUrl, {
+            	method: 'POST',
+            	body: JSON.stringify(payload)
+        	});
+
             const textMessage = `📋 *New Expense Submitted*\n\n` +
                                 `• Bill No: ${bill}\n` +
                                 `• Item No: ${item}\n` +
