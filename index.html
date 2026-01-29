@@ -87,13 +87,18 @@
             document.getElementById('submitBtn').style.display = 'none';
             document.getElementById('loading').style.display = 'block';
 
+            // Generate a 3-character random Reference Code (e.g., A1B)
+            const refCode = Math.random().toString(36).substring(2, 5).toUpperCase();
+
             const messageContent = `📋 *New Expense Submitted*\n\n` +
-                                 `• Bill No: ${bill}\n` +
-                                 `• Item No: ${item}\n` +
-                                 `• Desc: ${desc}\n` +
-                                 `• Supplier: ${supplier}\n` +
-                                 `• Installment: ${inst}\n` +
-                                 `• Amount: ฿${amount}`;
+                                   `• Bill No: ${bill}\n` +
+                                   `• Item No: ${item}\n` +
+                                   `• Desc: ${desc}\n` +
+                                   `• Supplier: ${supplier}\n` +
+                                   `• Installment: ${inst}\n` +
+                                   `• Amount: ฿${amount}\n`
+                                   `• Ref: ${refCode}` +;
+            
 
             try {
                 // This sends the message as "the user" into the chat
@@ -101,6 +106,10 @@
                     {
                         type: 'text',
                         text: messageContent
+                    }
+                    {
+                        type: 'text',
+                        text: refCode
                     }
                 ]);
                 liff.closeWindow(); // Closes form after submission
