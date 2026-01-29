@@ -1,55 +1,115 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2575.2">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; -webkit-text-stroke: #000000}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; -webkit-text-stroke: #000000; min-height: 14.0px}
-    span.s1 {font-kerning: none}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Reporting Form</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; background-color: #f4f4f9; color: #333; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        input:focus { border-color: #1DB446; outline: none; box-shadow: 0 0 5px rgba(29, 180, 70, 0.2); }
+        button { width: 100%; padding: 15px; background-color: #1DB446; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        button:active { background-color: #169639; }
+        .loading { display: none; text-align: center; color: #666; margin-top: 20px; }
+    </style>
 </head>
 <body>
-<p class="p1"><span class="s1">&lt;!DOCTYPE html&gt;</span></p>
-<p class="p1"><span class="s1">&lt;html&gt;</span></p>
-<p class="p1"><span class="s1">&lt;head&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;title&gt;Expense Form&lt;/title&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;script src="https://static.line-scdn.net/liff/edge/2/sdk.js"&gt;&lt;/script&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;style&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>body { font-family: sans-serif; padding: 20px; }</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>input { width: 100%; padding: 10px; margin: 8px 0; box-sizing: border-box; }</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>button { width: 100%; padding: 12px; background: #1DB446; color: white; border: none; border-radius: 5px; }</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</span></p>
-<p class="p1"><span class="s1">&lt;/head&gt;</span></p>
-<p class="p1"><span class="s1">&lt;body&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;h3&gt;New Expense&lt;/h3&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;input type="text" id="billNo" placeholder="Bill No."&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;input type="text" id="itemNo" placeholder="Item No."&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;input type="text" id="desc" placeholder="Description"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;input type="text" id="supplier" placeholder="Supplier"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;input type="number" id="instNo" placeholder="Installment No."&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;input type="number" id="amount" placeholder="Amount"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;button onclick="sendData()"&gt;Submit Expense&lt;/button&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;script&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// Initialize LIFF</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>async function main() {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>await liff.init({ liffId: "2009003342-DR5kmBIl" });</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>main();</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>async function sendData() {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const text = `New Expense:\nBill: ${document.getElementById('billNo').value}\nItem: ${document.getElementById('itemNo').value}\nDesc: ${document.getElementById('desc').value}\nSupplier: ${document.getElementById('supplier').value}\nInst: ${document.getElementById('instNo').value}\nAmount: ${document.getElementById('amount').value}`;</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>// Sends the data as a chat message and closes the window</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>await liff.sendMessages([{ type: 'text', text: text }]);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>liff.closeWindow();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</span></p>
-<p class="p1"><span class="s1">&lt;/body&gt;</span></p>
-<p class="p1"><span class="s1">&lt;/html&gt;</span></p>
+
+    <div id="form-container">
+        <h3>Submit New Expense</h3>
+        
+        <div class="form-group">
+            <label>Bill No.</label>
+            <input type="text" id="billNo" placeholder="Ex: INV-2024-001">
+        </div>
+
+        <div class="form-group">
+            <label>Item No.</label>
+            <input type="text" id="itemNo" placeholder="Ex: ITM-99">
+        </div>
+
+        <div class="form-group">
+            <label>Description</label>
+            <input type="text" id="desc" placeholder="Ex: Office Supplies">
+        </div>
+
+        <div class="form-group">
+            <label>Supplier</label>
+            <input type="text" id="supplier" placeholder="Ex: Amazon Business">
+        </div>
+
+        <div class="form-group">
+            <label>Installment No.</label>
+            <input type="number" id="instNo" placeholder="Ex: 1">
+        </div>
+
+        <div class="form-group">
+            <label>Amount</label>
+            <input type="number" step="0.01" id="amount" placeholder="0.00">
+        </div>
+
+        <button id="submitBtn" onclick="sendData()">Submit Expense</button>
+        <div id="loading" class="loading">Processing...</div>
+    </div>
+
+    <script>
+        // 1. Initialize LIFF
+        async function main() {
+            try {
+                await liff.init({ liffId: "2009003342-DR5kmBIl" }); // PASTE YOUR ID HERE
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                }
+            } catch (err) {
+                console.error("LIFF Initialization failed", err);
+            }
+        }
+        main();
+
+        // 2. Send Data back to Chat
+        async function sendData() {
+            const bill = document.getElementById('billNo').value;
+            const item = document.getElementById('itemNo').value;
+            const desc = document.getElementById('desc').value;
+            const supplier = document.getElementById('supplier').value;
+            const inst = document.getElementById('instNo').value;
+            const amount = document.getElementById('amount').value;
+
+            // Simple Validation
+            if (!bill || !amount) {
+                alert("Please fill in at least the Bill No and Amount");
+                return;
+            }
+
+            document.getElementById('submitBtn').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+
+            const messageContent = `📋 *New Expense Submitted*\n\n` +
+                                 `• Bill No: ${bill}\n` +
+                                 `• Item No: ${item}\n` +
+                                 `• Desc: ${desc}\n` +
+                                 `• Supplier: ${supplier}\n` +
+                                 `• Installment: ${inst}\n` +
+                                 `• Amount: ฿${amount}`;
+
+            try {
+                // This sends the message as "the user" into the chat
+                await liff.sendMessages([
+                    {
+                        type: 'text',
+                        text: messageContent
+                    }
+                ]);
+                liff.closeWindow(); // Closes form after submission
+            } catch (error) {
+                alert("Error sending message: " + error.message);
+                document.getElementById('submitBtn').style.display = 'block';
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>
