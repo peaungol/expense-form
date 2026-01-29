@@ -98,22 +98,21 @@
                                    `• Installment: ${inst}\n` +
                                    `• Amount: ฿${amount}\n`
                                    `• Ref: ${refCode}`;
-            
 
             try {
-                // This sends the message as "the user" into the chat
-                await liff.sendMessages([
-                    {
-                        type: 'text',
-                        text: messageContent
-                    }
-                ]);
-                await liff.sendMessages([
-                    {
-                        type: 'text',
-                        text: refCode
-                    }
-                ]);
+        // Send BOTH messages in one single array
+        await liff.sendMessages([
+            {
+                type: 'text',
+                text: messageContent
+            },
+            {
+                type: 'text',
+                text: refCode // Separate text reply as requested
+            }
+        ]);
+        
+        liff.closeWindow();
                 liff.closeWindow(); // Closes form after submission
             } catch (error) {
                 alert("Error sending message: " + error.message);
