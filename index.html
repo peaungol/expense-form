@@ -79,30 +79,15 @@
             document.getElementById('preview-section').style.display = 'none';
             document.getElementById('loading').style.display = 'block';
 
-            const refCode = Math.random().toString(36).substring(2, 6).toUpperCase(); // 4 Positions
-            const amount = document.getElementById('amount').value;
+            // FIXED: Define all necessary variables
             const bill = document.getElementById('billNo').value;
+            const item = document.getElementById('itemNo').value || "-";
+            const desc = document.getElementById('desc').value || "-";
+            const supplier = document.getElementById('supplier').value || "-";
+            const inst = document.getElementById('instNo').value || "-";
+            const amount = document.getElementById('amount').value;
+            const refCode = Math.random().toString(36).substring(2, 6).toUpperCase();
 
-            // Professional Flex Message
-            // const flexData = {
-            //     type: "bubble",
-            //     header: { type: "box", layout: "vertical", contents: [{ type: "text", text: "EXPENSE REPORT", color: "#ffffff", weight: "bold", size: "sm" }], backgroundColor: "#1DB446" },
-            //     body: {
-            //         type: "box", layout: "vertical", contents: [
-            //             { type: "text", text: "฿ " + parseFloat(amount).toLocaleString(), weight: "bold", size: "xl", color: "#1DB446" },
-            //             { type: "text", text: "Ref: " + refCode, size: "sm", weight: "bold", margin: "md" },
-            //             { type: "separator", margin: "md" },
-            //             { type: "text", text: "Bill: " + bill, size: "xs", margin: "md", color: "#888888" }
-            //         ]
-            //     }
-            // };
-
-            // try {
-            //     await liff.sendMessages([
-            //         { type: "flex", altText: "Expense: " + bill, contents: flexData },
-            //         { type: "text", text: refCode }
-            //     ]);
-            // Formatted Text Message (No Flex Box)
             const textMessage = `📋 *New Expense Submitted*\n\n` +
                                 `• Bill No: ${bill}\n` +
                                 `• Item No: ${item}\n` +
@@ -120,16 +105,9 @@
                     },
                     {
                         type: 'text',
-                        text: refCode // Separate message for easy copy-pasting
+                        text: refCode
                     }
                 ]);
-                liff.closeWindow();
-            } catch (err) {
-                alert("Error: " + err.message);
-                goBack();
-                document.getElementById('loading').style.display = 'none';
-            }
-        }
                 liff.closeWindow();
             } catch (err) {
                 alert("Error: " + err.message);
