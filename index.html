@@ -25,7 +25,7 @@
     <div class="card">
         <div id="form-section">
             <h3 style="color:#1DB446; margin-top:0;">Submit Expense</h3>
-            <div class="form-group"><label>Bill No.</label><input type="text" id="billNo" placeholder="Ex: SU2055"></div>
+            <div class="form-group"><label>Bill No.</label><input type="text" id="billNo" placeholder="Ex: SU2105"></div>
             <div class="form-group"><label>Item No.</label><input type="text" id="itemNo" placeholder="1"></div>
             <div class="form-group"><label>Description</label><input type="text" id="desc" placeholder="โครงเก้าอี้"></div>
             <div class="form-group"><label>Supplier</label><input type="text" id="supplier" placeholder="ช่างA"></div>
@@ -122,12 +122,13 @@
 
             try {
                 // 1. SEND TO GOOGLE SHEETS (Using 'no-cors' to avoid browser blocks)
+                // 1. SEND TO GOOGLE SHEETS
                 await fetch(CONFIG.scriptUrl, {
                     method: 'POST',
-                    mode: 'no-cors', 
-                    headers: { 'Content-Type': 'application/json' },
+                    mode: 'no-cors', // This tells the browser to ignore the response (which is fine)
+                    // headers: { 'Content-Type': 'application/json' },  <-- DELETE THIS LINE COMPLETELY
                     body: JSON.stringify(payload)
-                });
+                    });
 
                 // 2. PREPARE LINE MESSAGE
                 const textMessage = `📋 *New Expense Submitted*\n\n` +
