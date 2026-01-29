@@ -36,12 +36,14 @@
             <h3 style="color:#1DB446; margin-top:0;">Confirm Details</h3>
             <div class="preview-box">
                 <div class="preview-row"><span>Bill No:</span><strong id="p-bill"></strong></div>
-                <div class="preview-row"><span>Amount:</span><strong id="p-amount"></strong></div>
+                <div class="preview-row"><span>Item No:</span><strong id="p-item"></strong></div>
+                <div class="preview-row"><span>Description:</span><strong id="p-desc"></strong></div>
                 <div class="preview-row"><span>Supplier:</span><strong id="p-supplier"></strong></div>
-                <div class="preview-row"><span>Desc:</span><strong id="p-desc"></strong></div>
-            </div>
-            <button class="btn-send" onclick="confirmAndSend()">Confirm & Send</button>
-            <button class="btn-edit" onclick="goBack()">Go Back & Edit</button>
+                <div class="preview-row"><span>Installment:</span><strong id="p-inst"></strong></div>
+                <div class="preview-row"><span>Amount:</span><strong id="p-amount" style="color:#1DB446;"></strong></div>
+             </div>
+             <button class="btn-send" onclick="confirmAndSend()">Confirm & Send</button>
+             <button class="btn-edit" onclick="goBack()">Go Back & Edit</button>
         </div>
 
         <div id="loading" style="display:none; text-align:center; margin-top:20px; color:#666;">Sending to LINE...</div>
@@ -69,6 +71,34 @@
             document.getElementById('form-section').style.display = 'none';
             document.getElementById('preview-section').style.display = 'block';
         }
+
+        function showPreview() {
+            // Get values from inputs
+			const bill = document.getElementById('billNo').value;
+			const item = document.getElementById('itemNo').value || "-";
+			const desc = document.getElementById('desc').value || "-";
+			const supplier = document.getElementById('supplier').value || "-";
+			const inst = document.getElementById('instNo').value || "-";
+   			const amount = document.getElementById('amount').value;
+
+    		// Validation
+    		if (!bill || !amount) { 
+      		  alert("Please enter Bill No and Amount"); 
+      		  return; 
+  		  	}
+
+   			 // Map values to preview labels
+    		document.getElementById('p-bill').innerText = bill;
+    		document.getElementById('p-item').innerText = item;
+    		document.getElementById('p-desc').innerText = desc;
+   			document.getElementById('p-supplier').innerText = supplier;
+   		 	document.getElementById('p-inst').innerText = inst;
+   			document.getElementById('p-amount').innerText = "฿" + parseFloat(amount).toLocaleString(undefined, {minimumFractionDigits: 2});
+
+    		// Switch sections
+   			document.getElementById('form-section').style.display = 'none';
+   			document.getElementById('preview-section').style.display = 'block';
+		}
 
         function goBack() {
             document.getElementById('form-section').style.display = 'block';
