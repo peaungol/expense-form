@@ -3,27 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expense Reporting Form</title>
+    <title>Professional Expense Form</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://unpkg.com/vconsole@latest/dist/vconsole.min.js"></script>
+    <script>var vConsole = new window.VConsole();</script>
+    
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; background-color: #f4f4f9; color: #333; }
+        body { font-family: -apple-system, sans-serif; padding: 20px; background-color: #f4f7f6; color: #333; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h3 { margin-top: 0; color: #1DB446; border-bottom: 2px solid #eee; padding-bottom: 10px; }
         .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; }
-        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        input:focus { border-color: #1DB446; outline: none; box-shadow: 0 0 5px rgba(29, 180, 70, 0.2); }
-        button { width: 100%; padding: 15px; background-color: #1DB446; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        button:active { background-color: #169639; }
-        .loading { display: none; text-align: center; color: #666; margin-top: 20px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; color: #666; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; transition: 0.3s; }
+        input:focus { border-color: #1DB446; outline: none; background-color: #f9fffb; }
+        button { width: 100%; padding: 15px; background-color: #1DB446; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 6px rgba(29, 180, 70, 0.2); }
+        button:active { transform: translateY(2px); box-shadow: none; }
+        .loading { display: none; text-align: center; color: #888; margin-top: 20px; font-style: italic; }
     </style>
 </head>
 <body>
 
-    <div id="form-container">
-        <h3>Submit New Expense</h3>
+    <div class="card" id="form-container">
+        <h3>Submit Expense</h3>
         
         <div class="form-group">
             <label>Bill No.</label>
-            <input type="text" id="billNo" placeholder="Ex: SUYYMMNO">
+            <input type="text" id="billNo" placeholder="Ex: SU240101">
         </div>
 
         <div class="form-group">
@@ -33,52 +38,52 @@
 
         <div class="form-group">
             <label>Description</label>
-            <input type="text" id="desc" placeholder="Ex: โครงเก้าอี้">
+            <input type="text" id="desc" placeholder="Ex: Office Supplies">
         </div>
 
         <div class="form-group">
             <label>Supplier</label>
-            <input type="text" id="supplier" placeholder="Ex: ช่างA">
+            <input type="text" id="supplier" placeholder="Ex: Amazon">
         </div>
 
         <div class="form-group">
-            <label>Installment No.</label>
-            <input type="Text" id="instNo" placeholder="Ex: 1/2">
+            <label>Installment</label>
+            <input type="text" id="instNo" placeholder="Ex: 1/1">
         </div>
 
         <div class="form-group">
-            <label>Amount</label>
+            <label>Amount (฿)</label>
             <input type="number" step="0.01" id="amount" placeholder="0.00">
         </div>
 
-        <button id="submitBtn" onclick="sendData()">Submit Expense</button>
-        <div id="loading" class="loading">Processing...</div>
+        <button id="submitBtn" onclick="sendData()">Submit Report</button>
+        <div id="loading" class="loading">Processing and sending to LINE...</div>
     </div>
 
     <script>
         // 1. Initialize LIFF
         async function main() {
             try {
-                await liff.init({ liffId: "2009003342-DR5kmBIl" }); // PASTE YOUR ID HERE
+                // YOUR LIFF ID
+                await liff.init({ liffId: "2009003342-DR5kmBIl" }); 
                 if (!liff.isLoggedIn()) {
                     liff.login();
                 }
             } catch (err) {
-                console.error("LIFF Initialization failed", err);
+                console.error("LIFF Init Failed", err);
             }
         }
         main();
 
-        // 2. Send Data back to Chat
+        // 2. Main Logic
         async function sendData() {
             const bill = document.getElementById('billNo').value;
+            const amount = document.getElementById('amount').value;
             const item = document.getElementById('itemNo').value;
             const desc = document.getElementById('desc').value;
             const supplier = document.getElementById('supplier').value;
             const inst = document.getElementById('instNo').value;
-            const amount = document.getElementById('amount').value;
 
-            // Simple Validation
             if (!bill || !amount) {
                 alert("Please fill in at least the Bill No and Amount");
                 return;
@@ -87,35 +92,62 @@
             document.getElementById('submitBtn').style.display = 'none';
             document.getElementById('loading').style.display = 'block';
 
-            // Generate a 3-character random Reference Code (e.g., A1B)
+            // Generate 4-position Ref Code
             const refCode = Math.random().toString(36).substring(2, 6).toUpperCase();
 
-            const messageContent = `📋 *New Expense Submitted*\n\n` +
-                                   `• Bill No: ${bill}\n` +
-                                   `• Item No: ${item}\n` +
-                                   `• Desc: ${desc}\n` +
-                                   `• Supplier: ${supplier}\n` +
-                                   `• Installment: ${inst}\n` +
-                                   `• Amount: ฿${amount}\n` +
-                                   `• Ref: ${refCode}`;
+            // Professional Flex Message Content
+            const flexContents = {
+                type: "bubble",
+                header: {
+                    type: "box",
+                    layout: "vertical",
+                    contents: [{ type: "text", text: "EXPENSE SUBMISSION", weight: "bold", color: "#FFFFFF", size: "sm" }],
+                    backgroundColor: "#1DB446"
+                },
+                body: {
+                    type: "box",
+                    layout: "vertical",
+                    contents: [
+                        { type: "text", text: "฿ " + parseFloat(amount).toLocaleString(), weight: "bold", size: "xxl", margin: "md", color: "#1DB446" },
+                        { type: "text", text: desc || "No description", size: "sm", color: "#666666", margin: "xs" },
+                        { type: "separator", margin: "lg" },
+                        {
+                            type: "box",
+                            layout: "vertical",
+                            margin: "lg",
+                            spacing: "sm",
+                            contents: [
+                                { type: "box", layout: "horizontal", contents: [{ type: "text", text: "Bill No", size: "xs", color: "#aaaaaa" }, { type: "text", text: bill, size: "xs", align: "end", color: "#333333" }] },
+                                { type: "box", layout: "horizontal", contents: [{ type: "text", text: "Supplier", size: "xs", color: "#aaaaaa" }, { type: "text", text: supplier || "-", size: "xs", align: "end", color: "#333333" }] },
+                                { type: "box", layout: "horizontal", contents: [{ type: "text", text: "Ref Code", size: "xs", color: "#aaaaaa", weight: "bold" }, { type: "text", text: refCode, size: "xs", align: "end", weight: "bold", color: "#1DB446" }] }
+                            ]
+                        }
+                    ]
+                }
+            };
 
             try {
-        // Send BOTH messages in one single array
-        await liff.sendMessages([
-            {
-                type: 'text',
-                text: messageContent
-            },
-            {
-                type: 'text',
-                text: refCode // Separate text reply as requested
-            }
-        ]);
-        
-        liff.closeWindow();
-                liff.closeWindow(); // Closes form after submission
+                if (!liff.isInClient()) {
+                    throw new Error("You are not in the LINE app.");
+                }
+
+                // Send 2 messages: The Flex Receipt and the 4-digit Ref Code
+                await liff.sendMessages([
+                    {
+                        type: "flex",
+                        altText: "New Expense: " + bill,
+                        contents: flexContents
+                    },
+                    {
+                        type: "text",
+                        text: refCode
+                    }
+                ]);
+
+                liff.closeWindow();
             } catch (error) {
-                alert("Error sending message: " + error.message);
+                console.error(error);
+                alert("Failed: " + error.message);
                 document.getElementById('submitBtn').style.display = 'block';
                 document.getElementById('loading').style.display = 'none';
             }
