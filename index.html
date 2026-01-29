@@ -7,15 +7,17 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         body { font-family: -apple-system, sans-serif; padding: 20px; background-color: #f4f4f9; color: #333; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
         .form-group { margin-bottom: 15px; }
         label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; color: #666; }
         input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
         .btn-send { width: 100%; padding: 15px; background-color: #1DB446; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn-edit { width: 100%; padding: 12px; background-color: #ffffff; color: #333; border: 1px solid #ccc; border-radius: 8px; margin-top: 10px; font-weight: bold; }
+        .btn-send:disabled { background-color: #ccc; }
+        .btn-edit { width: 100%; padding: 12px; background-color: #ffffff; color: #333; border: 1px solid #ccc; border-radius: 8px; margin-top: 10px; font-weight: bold; cursor: pointer; }
         #preview-section { display: none; }
         .preview-box { background: #f9fffb; border: 2px dashed #1DB446; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
         .preview-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+        #loading { display: none; text-align: center; margin-top: 20px; color: #1DB446; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -42,24 +44,29 @@
                 <div class="preview-row"><span>Installment:</span><strong id="p-inst"></strong></div>
                 <div class="preview-row"><span>Amount:</span><strong id="p-amount" style="color:#1DB446;"></strong></div>
             </div>
-            <button class="btn-send" onclick="confirmAndSend()">Confirm & Send</button>
-            <button class="btn-edit" onclick="goBack()">Go Back & Edit</button>
+            <button id="confirmBtn" class="btn-send" onclick="confirmAndSend()">Confirm & Send</button>
+            <button id="backBtn" class="btn-edit" onclick="goBack()">Go Back & Edit</button>
         </div>
 
-        <div id="loading" style="display:none; text-align:center; margin-top:20px; color:#666;">Sending to LINE...</div>
+        <div id="loading">Processing... Please wait.</div>
     </div>
 
     <script>
+        // CONFIGURATION
+        const CONFIG = {
+            liffId: "2009003342-DR5kmBIl",
+            scriptUrl: "https://script.google.com/macros/s/AKfycby17s2vUqmaLRg8NUmBi2C4XIIVciDRXFHviGYYiTiVl6v9ieLd0i7K-EC63s4ph3ZAIQ/exec"
+        };
+
         async function main() {
             try {
-                // Initialize LIFF
-                await liff.init({ liffId: "2009003342-DR5kmBIl" });
+                await liff.init({ liffId: CONFIG.liffId });
                 if (!liff.isLoggedIn()) {
                     liff.login();
                 }
             } catch (err) {
                 console.error("LIFF Init failed", err);
-            
+            }
         }
         main();
 
@@ -72,7 +79,6 @@
                 return;
             }
 
-            // Map values to preview labels
             document.getElementById('p-bill').innerText = bill;
             document.getElementById('p-item').innerText = document.getElementById('itemNo').value || "-";
             document.getElementById('p-desc').innerText = document.getElementById('desc').value || "-";
@@ -80,7 +86,6 @@
             document.getElementById('p-inst').innerText = document.getElementById('instNo').value || "-";
             document.getElementById('p-amount').innerText = "฿" + parseFloat(amount).toLocaleString(undefined, {minimumFractionDigits: 2});
 
-            // Switch sections
             document.getElementById('form-section').style.display = 'none';
             document.getElementById('preview-section').style.display = 'block';
         }
@@ -91,6 +96,11 @@
         }
 
         async function confirmAndSend() {
+            // Disable buttons to prevent double-click
+            document.getElementById('confirmBtn').disabled = true;
+            document.getElementById('backBtn').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+
             const bill = document.getElementById('billNo').value;
             const item = document.getElementById('itemNo').value || "-";
             const desc = document.getElementById('desc').value || "-";
@@ -99,10 +109,6 @@
             const amount = document.getElementById('amount').value;
             const refCode = Math.random().toString(36).substring(2, 6).toUpperCase();
 
-            document.getElementById('preview-section').style.display = 'none';
-            document.getElementById('loading').style.display = 'block';
-
-            // 1. DATA FOR GOOGLE SHEETS
             const payload = {
                 authKey: "PNGL",
                 refCode: refCode,
@@ -115,28 +121,15 @@
             };
 
             try {
-                // 2. SEND TO GOOGLE SHEETS
-                const scriptUrl = "https://script.google.com/macros/s/AKfycby17s2vUqmaLRg8NUmBi2C4XIIVciDRXFHviGYYiTiVl6v9ieLd0i7K-EC63s4ph3ZAIQ/exec"; // Ensure this is your latest /exec URL
-                
-                // Use fetch WITHOUT 'await' if you want it to be faster, 
-                // but use 'await' if you want to ensure it saves before closing.
-                // Replace your current fetch block with this
-                try {
-                    const response = await fetch(scriptUrl, {
+                // 1. SEND TO GOOGLE SHEETS (Using 'no-cors' to avoid browser blocks)
+                await fetch(CONFIG.scriptUrl, {
                     method: 'POST',
-                    headers: {
-                    'Content-Type': 'text/plain;charset=utf-8',
-                    },
+                    mode: 'no-cors', 
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-    
-    // Note: With Apps Script, you might still get a CORS error here 
-    // even if the data reaches the sheet. That's okay!
-} catch (err) {
-    console.log("Fetch landed, ignore CORS error if data appears");
-}
-          
-                // 2. SEND TO LINE
+
+                // 2. PREPARE LINE MESSAGE
                 const textMessage = `📋 *New Expense Submitted*\n\n` +
                                     `• Bill No: ${bill}\n` +
                                     `• Item No: ${item}\n` +
@@ -146,21 +139,24 @@
                                     `• Amount: ฿${parseFloat(amount).toLocaleString()}\n` +
                                     `• Ref: ${refCode}`;
 
+                // 3. SEND TO LINE CLIENT
                 if (liff.isInClient()) {
                     await liff.sendMessages([
                         { type: 'text', text: textMessage },
                         { type: 'text', text: refCode }
                     ]);
-                    liff.closeWindow();
+                    document.getElementById('loading').innerText = "Success! Closing...";
+                    setTimeout(() => { liff.closeWindow(); }, 1500);
                 } else {
-                    alert("Form Submitted! (Not in LINE app)");
-                    console.log(textMessage);
-                    document.getElementById('loading').innerText = "Sent Successfully!";
+                    document.getElementById('loading').innerText = "Sent Successfully (Browser Mode)!";
+                    alert("Form Submitted Successfully!");
                 }
 
             } catch (err) {
-                alert("Error: " + err.message);
-                goBack();
+                console.error(err);
+                alert("Error sending data: " + err.message);
+                document.getElementById('confirmBtn').disabled = false;
+                document.getElementById('backBtn').style.display = 'block';
                 document.getElementById('loading').style.display = 'none';
             }
         }
