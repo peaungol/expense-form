@@ -1,125 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expense Reporting Form</title>
-    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; background-color: #f4f4f9; color: #333; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; }
-        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        input:focus { border-color: #1DB446; outline: none; box-shadow: 0 0 5px rgba(29, 180, 70, 0.2); }
-        button { width: 100%; padding: 15px; background-color: #1DB446; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        button:active { background-color: #169639; }
-        .loading { display: none; text-align: center; color: #666; margin-top: 20px; }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Reporting Form</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body { font-family: -apple-system, sans-serif; padding: 20px; background-color: #f4f4f9; color: #333; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; color: #666; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        .btn-send { width: 100%; padding: 15px; background-color: #1DB446; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-edit { width: 100%; padding: 12px; background-color: #ffffff; color: #333; border: 1px solid #ccc; border-radius: 8px; margin-top: 10px; font-weight: bold; width: 100%; }
+        #preview-section { display: none; }
+        .preview-box { background: #f9fffb; border: 2px dashed #1DB446; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .preview-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+    </style>
 </head>
 <body>
 
-    <div id="form-container">
-        <h3>Submit New Expense</h3>
-        
-        <div class="form-group">
-            <label>Bill No.</label>
-            <input type="text" id="billNo" placeholder="Ex: SUYYMMNO">
-        </div>
+    <div class="card">
+        <div id="form-section">
+            <h3 style="color:#1DB446; margin-top:0;">Submit Expense</h3>
+            <div class="form-group"><label>Bill No.</label><input type="text" id="billNo" placeholder="Ex: SU24001"></div>
+            <div class="form-group"><label>Item No.</label><input type="text" id="itemNo" placeholder="1"></div>
+            <div class="form-group"><label>Description</label><input type="text" id="desc" placeholder="Office Supplies"></div>
+            <div class="form-group"><label>Supplier</label><input type="text" id="supplier" placeholder="Amazon"></div>
+            <div class="form-group"><label>Installment</label><input type="text" id="instNo" placeholder="1/1"></div>
+            <div class="form-group"><label>Amount</label><input type="number" step="0.01" id="amount" placeholder="0.00"></div>
+            <button class="btn-send" onclick="showPreview()">Review Details</button>
+        </div>
 
-        <div class="form-group">
-            <label>Item No.</label>
-            <input type="text" id="itemNo" placeholder="Ex: 1">
-        </div>
+        <div id="preview-section">
+            <h3 style="color:#1DB446; margin-top:0;">Confirm Details</h3>
+            <div class="preview-box">
+                <div class="preview-row"><span>Bill No:</span><strong id="p-bill"></strong></div>
+                <div class="preview-row"><span>Amount:</span><strong id="p-amount"></strong></div>
+                <div class="preview-row"><span>Supplier:</span><strong id="p-supplier"></strong></div>
+                <div class="preview-row"><span>Desc:</span><strong id="p-desc"></strong></div>
+            </div>
+            <button class="btn-send" onclick="confirmAndSend()">Confirm & Send</button>
+            <button class="btn-edit" onclick="goBack()">Go Back & Edit</button>
+        </div>
 
-        <div class="form-group">
-            <label>Description</label>
-            <input type="text" id="desc" placeholder="Ex: โครงเก้าอี้">
-        </div>
+        <div id="loading" style="display:none; text-align:center; margin-top:20px; color:#666;">Sending to LINE...</div>
+    </div>
 
-        <div class="form-group">
-            <label>Supplier</label>
-            <input type="text" id="supplier" placeholder="Ex: ช่างA">
-        </div>
+    <script>
+        async function main() {
+            try {
+                await liff.init({ liffId: "2009003342-DR5kmBIl" });
+                if (!liff.isLoggedIn()) liff.login();
+            } catch (err) { console.error("Init failed", err); }
+        }
+        main();
 
-        <div class="form-group">
-            <label>Installment No.</label>
-            <input type="Text" id="instNo" placeholder="Ex: 1/2">
-        </div>
+        function showPreview() {
+            const bill = document.getElementById('billNo').value;
+            const amount = document.getElementById('amount').value;
+            if (!bill || !amount) { alert("Please enter Bill No and Amount"); return; }
 
-        <div class="form-group">
-            <label>Amount</label>
-            <input type="number" step="0.01" id="amount" placeholder="0.00">
-        </div>
+            document.getElementById('p-bill').innerText = bill;
+            document.getElementById('p-amount').innerText = "฿" + parseFloat(amount).toLocaleString();
+            document.getElementById('p-supplier').innerText = document.getElementById('supplier').value || "-";
+            document.getElementById('p-desc').innerText = document.getElementById('desc').value || "-";
 
-        <button id="submitBtn" onclick="sendData()">Submit Expense</button>
-        <div id="loading" class="loading">Processing...</div>
-    </div>
+            document.getElementById('form-section').style.display = 'none';
+            document.getElementById('preview-section').style.display = 'block';
+        }
 
-    <script>
-        // 1. Initialize LIFF
-        async function main() {
-            try {
-                await liff.init({ liffId: "2009003342-DR5kmBIl" }); // PASTE YOUR ID HERE
-                if (!liff.isLoggedIn()) {
-                    liff.login();
-                }
-            } catch (err) {
-                console.error("LIFF Initialization failed", err);
-            }
-        }
-        main();
+        function goBack() {
+            document.getElementById('form-section').style.display = 'block';
+            document.getElementById('preview-section').style.display = 'none';
+        }
 
-        // 2. Send Data back to Chat
-        async function sendData() {
-            const bill = document.getElementById('billNo').value;
-            const item = document.getElementById('itemNo').value;
-            const desc = document.getElementById('desc').value;
-            const supplier = document.getElementById('supplier').value;
-            const inst = document.getElementById('instNo').value;
-            const amount = document.getElementById('amount').value;
+        async function confirmAndSend() {
+            document.getElementById('preview-section').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
 
-            // Simple Validation
-            if (!bill || !amount) {
-                alert("Please fill in at least the Bill No and Amount");
-                return;
-            }
+            const refCode = Math.random().toString(36).substring(2, 6).toUpperCase(); // 4 Positions
+            const amount = document.getElementById('amount').value;
+            const bill = document.getElementById('billNo').value;
 
-            document.getElementById('submitBtn').style.display = 'none';
-            document.getElementById('loading').style.display = 'block';
+            // Professional Flex Message
+            const flexData = {
+                type: "bubble",
+                header: { type: "box", layout: "vertical", contents: [{ type: "text", text: "EXPENSE REPORT", color: "#ffffff", weight: "bold", size: "sm" }], backgroundColor: "#1DB446" },
+                body: {
+                    type: "box", layout: "vertical", contents: [
+                        { type: "text", text: "฿ " + parseFloat(amount).toLocaleString(), weight: "bold", size: "xl", color: "#1DB446" },
+                        { type: "text", text: "Ref: " + refCode, size: "sm", weight: "bold", margin: "md" },
+                        { type: "separator", margin: "md" },
+                        { type: "text", text: "Bill: " + bill, size: "xs", margin: "md", color: "#888888" }
+                    ]
+                }
+            };
 
-            // Generate a 3-character random Reference Code (e.g., A1B)
-            const refCode = Math.random().toString(36).substring(2, 5).toUpperCase();
-
-            const messageContent = `📋 *New Expense Submitted*\n\n` +
-                                   `• Bill No: ${bill}\n` +
-                                   `• Item No: ${item}\n` +
-                                   `• Desc: ${desc}\n` +
-                                   `• Supplier: ${supplier}\n` +
-                                   `• Installment: ${inst}\n` +
-                                   `• Amount: ฿${amount}\n`
-                                   `• Ref: ${refCode}`;
-
-            try {
-        // Send BOTH messages in one single array
-        await liff.sendMessages([
-            {
-                type: 'text',
-                text: messageContent
-            },
-            {
-                type: 'text',
-                text: refCode // Separate text reply as requested
-            }
-        ]);
-        
-        liff.closeWindow();
-                liff.closeWindow(); // Closes form after submission
-            } catch (error) {
-                alert("Error sending message: " + error.message);
-                document.getElementById('submitBtn').style.display = 'block';
-                document.getElementById('loading').style.display = 'none';
-            }
-        }
-    </script>
+            try {
+                await liff.sendMessages([
+                    { type: "flex", altText: "Expense: " + bill, contents: flexData },
+                    { type: "text", text: refCode }
+                ]);
+                liff.closeWindow();
+            } catch (err) {
+                alert("Error: " + err.message);
+                goBack();
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>
