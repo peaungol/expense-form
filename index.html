@@ -104,13 +104,13 @@
 
             // 1. DATA FOR GOOGLE SHEETS
             const payload = {
-                authKey: "MySuperSecret123!",
+                //authKey: "MySuperSecret123!",
                 refCode: refCode,
                 bill: bill,
-                item: item,
+                //item: item,
                 desc: desc,
-                supplier: supplier,
-                inst: inst,
+                //supplier: supplier,
+                //inst: inst,
                 amount: amount
             };
 
@@ -121,11 +121,11 @@
                 fetch(scriptUrl, {
                     method: 'POST',
                     mode: 'no-cors', 
-                    cache: 'no-cache',
-                    headers: { 'Content-Type': 'application/json' },
+                    //cache: 'no-cache',
+                    headers: { "Content-Type": "text/plain" },
                     body: JSON.stringify(payload)
                 });
-
+          
                 // 2. SEND TO LINE
                 const textMessage = `📋 *New Expense Submitted*\n\n` +
                                     `• Bill No: ${bill}\n` +
