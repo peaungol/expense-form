@@ -25,8 +25,31 @@
     <div class="card">
         <div id="form-section">
             <h3 style="color:#1DB446; margin-top:0;">Submit Expense</h3>
-            <div class="form-group"><label>Bill No.</label><input type="text" id="billNo" placeholder="Ex: SU2105"></div>
+            <div class="form-group"><label>Bill No.</label><input type="text" id="billNo" placeholder="Ex: SU260101"></div>
             <div class="form-group"><label>Item No.</label><input type="text" id="itemNo" placeholder="1"></div>
+            
+            <div class="form-group">
+                <label>Type</label>
+                <input list="type-options" id="itemType" placeholder="Select or type...">
+                <datalist id="type-options">
+                    <option value="Sofa">
+                    <option value="Armchair">
+                    <option value="Chair">
+                    <option value="Table">
+                    <option value="Coffee Table">
+                    <option value="Side Table">
+                    <option value="Bed">
+                    <option value="Bench">
+                    <option value="Night Table">
+                    <option value="Daybed/Ottoman/Stool">
+                    <option value="Console Cabinet">
+                    <option value="Desk">
+                    <option value="Bookcase">
+                    <option value="Pillow">
+                    <option value="Others">
+                </datalist>
+            </div>
+
             <div class="form-group"><label>Description</label><input type="text" id="desc" placeholder="โครงเก้าอี้"></div>
             <div class="form-group"><label>Supplier</label><input type="text" id="supplier" placeholder="ช่างA"></div>
             <div class="form-group"><label>Installment</label><input type="text" id="instNo" placeholder="1/2"></div>
@@ -39,6 +62,7 @@
             <div class="preview-box">
                 <div class="preview-row"><span>Bill No:</span><strong id="p-bill"></strong></div>
                 <div class="preview-row"><span>Item No:</span><strong id="p-item"></strong></div>
+                <div class="preview-row"><span>Type:</span><strong id="p-type"></strong></div>
                 <div class="preview-row"><span>Description:</span><strong id="p-desc"></strong></div>
                 <div class="preview-row"><span>Supplier:</span><strong id="p-supplier"></strong></div>
                 <div class="preview-row"><span>Installment:</span><strong id="p-inst"></strong></div>
@@ -52,7 +76,6 @@
     </div>
 
     <script>
-        // CONFIGURATION
         const CONFIG = {
             liffId: "2009003342-DR5kmBIl",
             scriptUrl: "https://script.google.com/macros/s/AKfycby17s2vUqmaLRg8NUmBi2C4XIIVciDRXFHviGYYiTiVl6v9ieLd0i7K-EC63s4ph3ZAIQ/exec"
@@ -61,12 +84,8 @@
         async function main() {
             try {
                 await liff.init({ liffId: CONFIG.liffId });
-                if (!liff.isLoggedIn()) {
-                    liff.login();
-                }
-            } catch (err) {
-                console.error("LIFF Init failed", err);
-            }
+                if (!liff.isLoggedIn()) liff.login();
+            } catch (err) { console.error("LIFF Init failed", err); }
         }
         main();
 
@@ -81,6 +100,7 @@
 
             document.getElementById('p-bill').innerText = bill;
             document.getElementById('p-item').innerText = document.getElementById('itemNo').value || "-";
+            document.getElementById('p-type').innerText = document.getElementById('itemType').value || "-";
             document.getElementById('p-desc').innerText = document.getElementById('desc').value || "-";
             document.getElementById('p-supplier').innerText = document.getElementById('supplier').value || "-";
             document.getElementById('p-inst').innerText = document.getElementById('instNo').value || "-";
@@ -96,13 +116,13 @@
         }
 
         async function confirmAndSend() {
-            // Disable buttons to prevent double-click
             document.getElementById('confirmBtn').disabled = true;
             document.getElementById('backBtn').style.display = 'none';
             document.getElementById('loading').style.display = 'block';
 
             const bill = document.getElementById('billNo').value;
             const item = document.getElementById('itemNo').value || "-";
+            const type = document.getElementById('itemType').value || "-";
             const desc = document.getElementById('desc').value || "-";
             const supplier = document.getElementById('supplier').value || "-";
             const inst = document.getElementById('instNo').value || "-";
@@ -114,6 +134,7 @@
                 refCode: refCode,
                 bill: bill,
                 item: item,
+                type: type, // New column
                 desc: desc,
                 supplier: supplier,
                 inst: inst,
@@ -121,43 +142,33 @@
             };
 
             try {
-                // 1. SEND TO GOOGLE SHEETS (Using 'no-cors' to avoid browser blocks)
-                // 1. SEND TO GOOGLE SHEETS
                 await fetch(CONFIG.scriptUrl, {
                     method: 'POST',
-                    mode: 'no-cors', // This tells the browser to ignore the response (which is fine)
-                    // headers: { 'Content-Type': 'application/json' },  <-- DELETE THIS LINE COMPLETELY
+                    mode: 'no-cors',
                     body: JSON.stringify(payload)
-                    });
+                });
 
-                // 2. PREPARE LINE MESSAGE
                 const textMessage = `📋 *New Expense Submitted*\n\n` +
                                     `• Bill No: ${bill}\n` +
                                     `• Item No: ${item}\n` +
+                                    `• Type: ${type}\n` +
                                     `• Desc: ${desc}\n` +
                                     `• Supplier: ${supplier}\n` +
                                     `• Installment: ${inst}\n` +
                                     `• Amount: ฿${parseFloat(amount).toLocaleString()}\n` +
                                     `• Ref: ${refCode}`;
 
-                // 3. SEND TO LINE CLIENT
                 if (liff.isInClient()) {
-                    await liff.sendMessages([
-                        { type: 'text', text: textMessage },
-                        { type: 'text', text: refCode }
-                    ]);
+                    await liff.sendMessages([{ type: 'text', text: textMessage }, { type: 'text', text: refCode }]);
                     document.getElementById('loading').innerText = "Success! Closing...";
                     setTimeout(() => { liff.closeWindow(); }, 1500);
                 } else {
-                    document.getElementById('loading').innerText = "Sent Successfully (Browser Mode)!";
+                    document.getElementById('loading').innerText = "Sent Successfully!";
                     alert("Form Submitted Successfully!");
                 }
-
             } catch (err) {
-                console.error(err);
-                alert("Error sending data: " + err.message);
+                alert("Error: " + err.message);
                 document.getElementById('confirmBtn').disabled = false;
-                document.getElementById('backBtn').style.display = 'block';
                 document.getElementById('loading').style.display = 'none';
             }
         }
